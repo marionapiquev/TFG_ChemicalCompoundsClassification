@@ -33,28 +33,25 @@ DF <- read.csv("df_molecular_descriptors_scaled.csv")
 
 ########################################
 #K-MEANS
+#Prepare the data for clustering
 cnames <- colnames(DF)
 df <- DF[,cnames[!cnames %in% c("X","id")]]
-#S1. Choose the number of clusters using the elbow method
-#M1. Elbow Method
-fviz_nbclust(df, FUN = kmeans, k.max = 20, method = "gap_stat")
 
+#Perform the clustering
 km.res <- kmeans(pca_DF, 10)
 km.res
-fviz_cluster(km.res, data = pca_DF, ellipse.type = "convex")
 
+#Add clustering results to a dataframe
 df_km <- pca_DF
 df_km['cluster'] <- km.res['cluster']
 
-
+#Visualize the clustering
 fig <- plot_ly(df_km, x = ~Comp.1, y = ~Comp.2, z = ~Comp.3, color = ~cluster)
 fig <- fig %>% add_markers()
-fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),
-                                   yaxis = list(title = 'OB_MW'),
-                                   zaxis = list(title = 'OB_MR')))
-
+fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),yaxis = list(title = 'OB_MW'),zaxis = list(title = 'OB_MR')))
 fig
 
+#PCA
 pca.DF <- princomp(df) 
 summary(pca.DF)
 #Show the percentage of variances explained by each principal component.
@@ -94,27 +91,23 @@ df_hc['cluster'] <- grp
 #Visualize the clustering
 fig <- plot_ly(df_hc, x = ~MLogP, y = ~OB_MW, z = ~OB_logP, color = ~cluster)
 fig <- fig %>% add_markers()
-fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),
-                                   yaxis = list(title = 'OB_MW'),
-                                   zaxis = list(title = 'OB_logP')))
+fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),yaxis = list(title = 'OB_MW'),zaxis = list(title = 'OB_logP')))
 fig
 
-
-ggplot(data = df_hc,
-       mapping = aes(x = MLogP, 
-                     y = OB_MW,
-                     color = cluster))+
-  geom_point() 
-
+ggplot(data = df_hc, mapping = aes(x = MLogP, y = OB_MW,color = cluster))+geom_point() 
 ########################################
 #DBSCAN
+#Prepare the data for clustering
+cnames <- colnames(DF)
+df <- DF[,cnames[!cnames %in% c("X","id")]]
+
+#Perform the clustering
 dbscan_result <- dbscan(df, eps = 2, minPts = 10)
+
+#Add clustering results to a dataframe
 df_dbscan <- DF
 df_dbscan['cluster'] <- dbscan_result$cluster
 
+#Visualize the clustering
 df_clusters <- filter(df_dbscan, cluster > 0)
-ggplot(data = df_clusters,
-       mapping = aes(x = MLogP, 
-                     y = OB_MW,
-                     color = cluster))+
-  geom_point() 
+ggplot(data = df_clusters, mapping = aes(x = MLogP,y = OB_MW, color = cluster))+geom_point() 
