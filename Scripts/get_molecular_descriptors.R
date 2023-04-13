@@ -108,3 +108,37 @@ extract_propietites_compounds <- function(name) {
 
 df_MD <- extract_propietites_compounds("DrugBank_3Dstructures.sdf")
 
+extract_fingerprints <- function(name,ftype) {
+  mols <- load.molecules("DrugBank_3Dstructures.sdf")
+  sdfset <- read.SDFset("DrugBank_3Dstructures.sdf")
+  if (ftype == 'MACCS'){
+    fp <- extractDrugMACCS(mols, silent = TRUE)
+  }
+  else if  (ftype == 'FP2'){
+    fp <- extractDrugOBFP2(sdfset, type = 'sdf')
+  }
+  else if  (ftype == 'FP3'){
+    fp <- extractDrugOBFP3(sdfset, type = 'sdf')
+  }
+  else if  (ftype == 'FP4'){
+    fp <- extractDrugOBFP4(sdfset, type = 'sdf')
+  }
+  else if  (ftype == 'PubChem'){
+    fp <- extractDrugPubChem(mols, silent = TRUE)
+  }
+}
+
+fp <- extract_fingerprints("DrugBank_3Dstructures.sdf", 'PubChem')
+
+extract_smiles <- function(name){
+  #LOAD MOLECULES 
+  mols <- load.molecules(name)
+  sdfset <- read.SDFset(name)
+  #EXTRACT SMILES
+  smiles <- datablocktag(sdfset, tag="SMILES")
+  ids <- datablocktag(sdfset, tag="DRUGBANK_ID")
+  df_smiles <- data.frame(id=ids, smile=smiles)
+  write.csv(df_smiles, "df_smiles.csv")
+}
+
+smiles <- extract_smiles("DrugBank_3Dstructures.sdf")
