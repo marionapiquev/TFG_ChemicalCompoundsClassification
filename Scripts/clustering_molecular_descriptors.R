@@ -29,12 +29,35 @@ library(dbscan)
 #LOAD THE DATAFRAME
 #Set the directory 
 setwd("/Users/MarionaP/Desktop/TFG/DrugBank")
-DF <- read.csv("df_molecular_descriptors_scaled.csv")
+Df_scaled <- read.csv("df_molecular_descriptors_scaled.csv")
 df_original <- read.csv("df_molecular_descriptors.csv")
 smiles <- read.csv("df_smiles.csv")
+df_filter <- read.csv("df_molecular_descriptors_scaled_filtered.csv")
+########################################
+#PCA
+pca <- function(df){
+  pca.DF <- princomp(df) 
+  summary(pca.DF)
+  #Show the percentage of variances explained by each principal component.
+  fviz_eig(pca.DF)
+  #Graph of individuals (Individuals with a similar profile are grouped together)
+  fviz_pca_ind(pca.DF,
+               col.ind = "cos2", 
+               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+               repel = TRUE     # Avoid text overlapping
+  )
+  pca_DF <- as.data.frame(pca.DF$scores)
+}
+
+pca_DF <- pca(df)
+
+p <- plot_ly(pca_DF, x=pca_DF$Comp.1, y=pca_DF$Comp.2, 
+             z=pca_DF$Comp.3) %>% add_markers(size=1.5)
+print(p)
 ########################################
 #K-MEANS
 #Prepare the data for clustering
+DF <- df_filter
 cnames <- colnames(DF)
 df <- DF[,cnames[!cnames %in% c("X","id")]]
 
@@ -52,26 +75,10 @@ fig <- fig %>% add_markers()
 fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),yaxis = list(title = 'OB_MW'),zaxis = list(title = 'OB_MR')))
 fig
 
-#PCA
-pca.DF <- princomp(df) 
-summary(pca.DF)
-#Show the percentage of variances explained by each principal component.
-fviz_eig(pca.DF)
-#Graph of individuals (Individuals with a similar profile are grouped together)
-fviz_pca_ind(pca.DF,
-             col.ind = "cos2", 
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-)
-pca_DF <- as.data.frame(pca.DF$scores)
-p <- plot_ly(pca_DF, x=pca_DF$Comp.1, y=pca_DF$Comp.2, 
-             z=pca_DF$Comp.3) %>%
-  add_markers(size=1.5)
-print(p)
-
 ########################################
 #HIERARCHICAL CLUSTERING
 #Prepare the data for HC
+DF <- df_filter
 cnames <- colnames(DF)
 df <- DF[,cnames[!cnames %in% c("X","id","X.1")]]
 dist_matrix <- daisy(df, metric = "euclidean")
@@ -81,9 +88,9 @@ hc <- hclust(dist_matrix, method = 'ward.D')
 plot(hc,main = paste('Dendrogram'), xlab = 'Molecules', ylab = 'Euclidean distances')
 
 #Cut tree in n clusters
-grp <- cutree(hc, k = 20)
+grp <- cutree(hc, k = 10)
 plot(hc,main = paste('Dendrogram'),xlab = 'Molecules', ylab = 'Euclidean distances') 
-rect.hclust(hc, k = 20, border = 2:5)
+rect.hclust(hc, k = 10, border = 2:5)
 
 #Add clustering results to a dataframe
 df_hc <- DF
@@ -95,19 +102,23 @@ fig <- fig %>% add_markers()
 fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),yaxis = list(title = 'OB_MW'),zaxis = list(title = 'OB_logP')))
 fig
 
-ggplot(data = df_hc, mapping = aes(x = MLogP, y = OB_MW,color = cluster))+geom_point() 
+#ggplot(data = df_hc, mapping = aes(x = MLogP, y = OB_MW,color = cluster))+geom_point() 
+
 ########################################
 #DBSCAN
 #Prepare the data for clustering
+DF <- Df_scaled
 cnames <- colnames(DF)
 df <- DF[,cnames[!cnames %in% c("X","id","X.1")]]
 
 #Perform the clustering
 #BO: eps = 2, minPts = 10
+#df_filter (small): eps = 5, minPts = 5
+#df_filter (small): eps = 6, minPts = 5
 dbscan_result <- dbscan(df,eps = 2, minPts = 10)
 
 #Add clustering results to a dataframe
-df_dbscan <- df_original
+df_dbscan <- Df_scaled
 df_dbscan['cluster'] <- dbscan_result$cluster
 
 #Visualize the clustering
@@ -132,7 +143,7 @@ visualize_cluster_mols <- function(df_dbscan, cnames, nclusters){
 }
 visualize_cluster_mols(df_dbscan, cnames,5)
 
-#Function to get the similarity comparission of molecules on the same cluster
+#Function to get the similarity comparison of molecules on the same cluster
 mols_similarity <- function(df_dbscan, cnames, nclusters){
   cluster1 <- filter(df_dbscan, cluster == 1)
   c1_id <- cluster1[cnames[cnames %in% c("id")]]
@@ -154,4 +165,10 @@ mols_similarity <- function(df_dbscan, cnames, nclusters){
   return(mol_similarity)
 }
 
-df_mols_similarity <- mols_similarity(df_dbscan, cnames, 3)
+df_mols_similarity <- mols_similarity(df_dbscan, cnames, 5)
+
+for (i in 1:5){
+  cluster <- filter(df_mols_similarity, cluster == i)
+  cat('\nTanimoto coef mean cluster',i,':',sum(cluster['Tanimoto_Coef'])/nrow(cluster))
+  cat('\nOverlap coef mean cluster',i,':',sum(cluster['Overlap_Coef'])/nrow(cluster))
+}
