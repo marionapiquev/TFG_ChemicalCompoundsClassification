@@ -7,8 +7,8 @@ This project includes two directories, one for Scripts and another for Data.
 
 #### Scripts:
 - `get_molecular_descriptors.R`: Includes all functions required to extract molecular descriptors.
-- `data_preprocessing.R`: Source file with data transformation process to prepare data for clustering.
-- `clustering_molecular_descriptors.R`: 
+- `data_preprocessing.R`: Script with data transformation process implemented to prepare data for clustering.
+- `clustering_molecular_descriptors.R`: Includes a variety of clustering algorithms implemented to cluster chemical compounds based on their molecular descriptors. These algorithms are hierarchical clustering, k-means, and DBSCAN.
 
 #### Data:
 - `df_molecular_descriptors.csv`: Dataframe obtained using *extract_molecular_descriptors* function from `get_molecular_descriptors.R` file. It contains the molecular descriptors of 9213 chemical compounds.
