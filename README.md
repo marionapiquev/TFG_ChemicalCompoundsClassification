@@ -8,7 +8,7 @@ This project includes two directories, one for Scripts and another for Data.
 #### Scripts:
 - `get_molecular_descriptors.R`: Includes all functions required to extract molecular descriptors.
 - `data_preprocessing.R`: Script with data transformation process implemented to prepare data for clustering.
-- `clustering_molecular_descriptors.R`: Includes a variety of clustering algorithms implemented to cluster chemical compounds based on their molecular descriptors. These algorithms are hierarchical clustering, k-means, and DBSCAN.
+- `clustering_molecular_descriptors.R`: Includes a variety of clustering algorithms implemented to cluster chemical compounds based on their molecular descriptors. These algorithms are hierarchical clustering, k-means, DBSCAN, and HDBSCAN.
 - `clustering_visualitzation_dbscan.R`: Includes a variety of functions to analyze and visualize the clustering results of the DBSCAN algorithm.
 - `filter_molecular_descriptors.R`: Includes a filtering function to filter the data frame given some conditions. 
 
