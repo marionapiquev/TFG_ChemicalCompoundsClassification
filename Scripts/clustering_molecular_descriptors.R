@@ -152,5 +152,30 @@ fig <- fig %>% add_markers()
 fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),yaxis = list(title = 'OB_MW'),zaxis = list(title = 'OB_logP')))
 fig
 
+########################################
+#HDBSCAN
+#Prepare the data for clustering
+DF <- Df_scaled
+cnames <- colnames(DF)
+df <- DF[,cnames[!cnames %in% c("X","id","X.1")]]
+
+#Perform the clustering
+h_dbscan_result <- hdbscan(df, minPts = 3)
+
+#Visualize the Simplified Tree
+plot(h_dbscan_result, show_flat = T)
+
+#Add clustering results to a dataframe
+df_hdbscan <- df_original
+df_hdbscan['cluster'] <- h_dbscan_result$cluster
+
+#Visualize the clustering
+df_clusters <- filter(df_hdbscan, cluster > 0)
+ggplot(data = df_clusters, mapping = aes(x = MLogP,y = OB_MW, color = cluster))+geom_point() 
+
+fig <- plot_ly(df_clusters, x = ~MLogP, y = ~OB_MW, z = ~OB_logP, color = ~cluster)
+fig <- fig %>% add_markers()
+fig <- fig %>% layout(scene = list(xaxis = list(title = 'MLogP'),yaxis = list(title = 'OB_MW'),zaxis = list(title = 'OB_logP')))
+fig
 
 
