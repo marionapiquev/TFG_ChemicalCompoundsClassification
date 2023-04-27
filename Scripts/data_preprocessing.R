@@ -52,6 +52,7 @@ dim(df)
 
 #Drop the repeated molecules
 df <- df %>% distinct(id, .keep_all = TRUE)
+write.csv(df, "df_molecular_descriptors.csv")
 
 #Summary: Check if the dataframe is scaled 
 summary(df)
