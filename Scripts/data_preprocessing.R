@@ -22,6 +22,7 @@ library(cluster)
 library("factoextra")
 library(fpc)
 library(ggcorrplot)
+library(dplyr)
 ########################################
 #LOAD THE DATAFRAME
 #Set the directory 
@@ -49,6 +50,9 @@ dim(df)
 df <- na.omit(df)
 dim(df)
 
+#Drop the repeated molecules
+df <- df %>% distinct(id, .keep_all = TRUE)
+
 #Summary: Check if the dataframe is scaled 
 summary(df)
 
@@ -70,3 +74,4 @@ ggcorrplot(cor_matrix, colors = c("lavender", "steelblue", "navyblue"),lab = FAL
 
 #Download scaled dataframe
 write.csv(df_scaled, "df_molecular_descriptors_scaled.csv")
+
