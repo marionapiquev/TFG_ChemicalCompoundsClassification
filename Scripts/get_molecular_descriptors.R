@@ -1,4 +1,7 @@
 ########################################
+#INCREASE THE SIZE OF JAVA RUNTIME HEAP
+options(java.parameters = "-Xmx")
+########################################
 #INSTALLING R PACKAGES (ONLY RUN ONCE!!!)
 #if (!requireNamespace("BiocManager", quietly = TRUE))
 #install.packages("BiocManager")
@@ -22,9 +25,6 @@ library(cluster)
 library("factoextra")
 library(fpc)
 ########################################
-#INCREASE THE SIZE OF JAVA RUNTIME HEAP
-options(java.parameters = "-Xmx")
-########################################
 #IMPORT MOLECULES IN R 
 
 #Set the directory
@@ -44,8 +44,8 @@ extract_propietites_compounds <- function(name) {
   smiles <- datablocktag(sdfset, tag="SMILES")
   ids <- datablocktag(sdfset, tag="DRUGBANK_ID")
   info <- extractDrugDescOB(smiles[1], type = 'smile')
-  OB_structural <- data.frame(id=ids[i],OB_HBA1=info$HBA1, OB_HBA2=info$HBA2, OB_HBD=info$HBD,OB_nF=info$nF,OB_MW=info$MW)
-  OB_physicochemical <- data.frame(id=ids[i],OB_MR=info$MR, OB_logP=info$logP, OB_TPSA=info$TPSA)
+  OB_structural <- data.frame(id=ids[1],OB_HBA1=info$HBA1, OB_HBA2=info$HBA2, OB_HBD=info$HBD,OB_nF=info$nF,OB_MW=info$MW)
+  OB_physicochemical <- data.frame(id=ids[1],OB_MR=info$MR, OB_logP=info$logP, OB_TPSA=info$TPSA)
   for (i in 2:length(smiles)){
     info <- extractDrugDescOB(smiles[i], type = 'smile')
     OB_structural[nrow(OB_structural) + 1,] <- data.frame(id=ids[i],OB_HBA1=info$HBA1, OB_HBA2=info$HBA2, OB_HBD=info$HBD,OB_nF=info$nF,OB_MW=info$MW)
@@ -132,7 +132,6 @@ fp <- extract_fingerprints("DrugBank_3Dstructures.sdf", 'PubChem')
 
 extract_smiles <- function(name){
   #LOAD MOLECULES 
-  mols <- load.molecules(name)
   sdfset <- read.SDFset(name)
   #EXTRACT SMILES
   smiles <- datablocktag(sdfset, tag="SMILES")
@@ -142,3 +141,4 @@ extract_smiles <- function(name){
 }
 
 smiles <- extract_smiles("DrugBank_3Dstructures.sdf")
+
