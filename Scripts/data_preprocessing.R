@@ -28,6 +28,7 @@ library(dplyr)
 #Set the directory 
 setwd("/Users/MarionaP/Desktop/TFG/DrugBank")
 DF <- read.csv("df_molecular_descriptors.csv")
+smiles <- read.csv("df_smiles.csv")
 ########################################
 #DATA PREPROCESSING
 #Check the dimension of the dataframe
@@ -52,16 +53,21 @@ dim(df)
 
 #Drop the repeated molecules
 df <- df %>% distinct(id, .keep_all = TRUE)
+df <- df[! colnames(df) %in% c("X")]
 write.csv(df, "df_molecular_descriptors.csv")
+
+smiles <- smiles %>% distinct(id, .keep_all = TRUE)
+smiles <- smiles[! colnames(smiles) %in% c("X")]
+write.csv(smiles, "df_smiles.csv")
 
 #Summary: Check if the dataframe is scaled 
 summary(df)
 
 #Scale the continuous variables
 cnames <- colnames(df)
-colnames_scale <- cnames[! cnames %in% c("X","id","C1SP1","C2SP1","C1SP2","C2SP2","C3SP2", "C1SP3", "C2SP3", "C3SP3", "C4SP3", "naAromAtom",
+colnames_scale <- cnames[! cnames %in% c("id","C1SP1","C2SP1","C1SP2","C2SP2","C3SP2", "C1SP3", "C2SP3", "C3SP3", "C4SP3", "naAromAtom",
                             "nRotB","nAtomLC","nAtomP","nAtomLAC","OB_HBA1","OB_HBA2","OB_HBD","OB_nF")]
-colnames_no <- cnames[cnames %in% c("X","id","C1SP1","C2SP1","C1SP2","C2SP2","C3SP2", "C1SP3", "C2SP3", "C3SP3", "C4SP3", "naAromAtom",
+colnames_no <- cnames[cnames %in% c("id","C1SP1","C2SP1","C1SP2","C2SP2","C3SP2", "C1SP3", "C2SP3", "C3SP3", "C4SP3", "naAromAtom",
                                       "nRotB","nAtomLC","nAtomP","nAtomLAC","OB_HBA1","OB_HBA2","OB_HBD","OB_nF")]
 scaled_desc <- scale(df[,colnames_scale])
 df_scaled <- cbind(df[,colnames_no], scaled_desc)
