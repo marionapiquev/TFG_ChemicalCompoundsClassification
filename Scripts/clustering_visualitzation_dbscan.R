@@ -1,5 +1,6 @@
 ########################################
 #LOADING R PACKAGES
+options(java.parameters = c("-XX:+UseConcMarkSweepGC", "-Xmx8192m"))
 library(rcdk)
 library(ChemmineR) 
 library(ChemmineOB) 
@@ -116,3 +117,35 @@ df_mols_similarity <- mols_similarity(df_dbscan, cnames, nclusters)
 
 #Tanimoto coeficient
 mols_similarity_matrix(df_dbscan, cnames, nclusters)
+
+########################################
+#HDBSCAN
+#Prepare the data for clustering
+DF <- Df_scaled
+cnames <- colnames(DF)
+df <- DF[,cnames[!cnames %in% c("X","id","X.1","X.2")]]
+
+#Calculate the performance of the algorithm with different minPts based on the similarity between molecules on the same cluster
+Pts <- seq(3, 15, by=1)
+results <- c()
+for (j in Pts){ 
+  print(j)
+  total <- 0
+  h_dbscan_result <- hdbscan(df, minPts = j)
+  df_hdbscan <- df_original
+  df_hdbscan['cluster'] <- h_dbscan_result$cluster
+  nclusters <- length(unique(df_hdbscan$cluster))-1
+  for (k in 1:nclusters){
+    cluster <- filter(df_hdbscan, cluster == k)
+    c_id <- cluster[cnames[cnames %in% c("id")]]
+    c_smiles <- filter(smiles, id %in% as.list(c_id)$id)
+    m <- ms.compute.sim.matrix(c_smiles$smile, format = 'SMILES', fp.type='pubchem', sim.method='tanimoto')
+    m[lower.tri(m, diag=TRUE)] <- 0
+    similarity <- sum(m)/sum(rowCounts(m > 0))
+    total <- total + similarity
+  }
+  results <- c(results, total/nclusters)
+}
+
+plot(Pts,results, pch=16, col = "steelblue",xlab = "minPts", ylab = "Mean Similarity")
+
